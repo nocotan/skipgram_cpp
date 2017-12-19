@@ -140,14 +140,14 @@ class hierarchical_softmax {
             return code_table;
         }
 
-        double softmax(int id, mat3d v1, mat2d v2) {
+        double softmax(int w_i, int w, mat3d v1, mat2d v2) {
             double res = 1.0;
 
-            for(int j=0; j<paths[id].size()-1; ++j) {
-                int w = paths[id][j].first;
-                int edges = paths[id][j].second;
+            for(int j=0; j<paths[w].size()-1; ++j) {
+                int x = paths[w][j].first;
+                int edges = paths[w][j].second;
 
-                res *= sigmoid((1 / edges) * prod(v1[w][j], v2[id]));
+                res *= sigmoid((1 / edges) * prod(v1[x][j], v2[w_i]));
             }
 
             return res;

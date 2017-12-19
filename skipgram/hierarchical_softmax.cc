@@ -31,8 +31,8 @@ int main() {
 
     double p = 0.0;
     for(int i=0; i<6; ++i) {
-        p += hSm.softmax(i, v1, v2);
-        std::cout << hSm.softmax(i, v1, v2) << std::endl;
+        p += hSm.softmax(0, i, v1, v2);
+        std::cout << hSm.softmax(0, i, v1, v2) << std::endl;
     }
     std::cout << p << std::endl;
 }
