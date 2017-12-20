@@ -18,6 +18,7 @@
 #include <iostream>
 #include <map>
 #include <queue>
+#include <random>
 #include <utility>
 #include <vector>
 
@@ -66,6 +67,9 @@ bool operator <(const node& lhs, const node& rhs) { return lhs.freq < rhs.freq; 
 bool operator ==(const node& lhs, const node& rhs) { return lhs.freq == rhs.freq; }
 bool operator >(const node& lhs, const node& rhs) { return lhs.freq > rhs.freq; }
 
+std::random_device rd;
+std::mt19937 mt(rd());
+std::uniform_real_distribution<float> score(-1.0,1.0);
 
 /**
  * @class
@@ -74,18 +78,19 @@ bool operator >(const node& lhs, const node& rhs) { return lhs.freq > rhs.freq; 
 class hierarchical_softmax {
     private:
         int V;
-        std::map<int, std::vector<std::pair<int, int>>> paths;
+        int d;
+        std::map<int, std::vector<std::vector<float>>> paths;
 
         int idx = -1;
 
-        void dfs(std::vector<code_info> &table, node* nd, int code, int code_size, std::vector<std::pair<int, int>> pth) {
+        void dfs(std::vector<code_info> &table, node* nd, int code, int code_size, std::vector<std::vector<float>> pth) {
             idx++;
-            int edge_count = 0;
 
-            if(nd->left!=nullptr) edge_count++;
-            if(nd->right!=nullptr) edge_count++;
+            std::vector<float> tmp;
 
-            pth.emplace_back(std::make_pair(idx, edge_count));
+            for(int i=0; i<d; ++i) tmp.push_back(score(mt));
+
+            pth.emplace_back(tmp);
 
             if(nd->left == nullptr && nd->right == nullptr) {
                 table[nd->value] = code_info(code, code_size);
@@ -113,7 +118,7 @@ class hierarchical_softmax {
         }
 
     public:
-        hierarchical_softmax(int V) : V(V) { }
+        hierarchical_softmax(int V, int d) : V(V), d(d) { }
 
         std::vector<code_info> encode(std::map<int, int> freqs) {
             std::vector<node*> nodes(V);
@@ -139,30 +144,28 @@ class hierarchical_softmax {
 
             node *root = heap.top(); heap.pop();
 
+            std::cout << "make tree..." << std::endl;
             std::vector<code_info> code_table(V);
-            dfs(code_table, root, 0, 0, std::vector<std::pair<int, int>>());
+            dfs(code_table, root, 0, 0, std::vector<std::vector<float>>());
 
             return code_table;
         }
 
-        const float softmax(const int w_i, const int w, const mat3d v1, const mat2d v2) {
+        const float softmax(const int w_i, const int w, const mat2d v2) {
             float res = 1.0;
             const unsigned n=paths[w].size()-1;
 
             for(unsigned j=0; j<n; ++j) {
-                const int x = paths[w][j].first;
-                const float edges = paths[w][j].second;
+                auto x = paths[w][j];
 
                 // std::cout << j << " " << x << " " << edges << std::endl;
-                if(edges==2)
-                    res *= (sigmoid(0.5 * dot(v1[x][j], v2[w_i])));
-                else if(edges==1)
-                    res *= (sigmoid(dot(v1[x][j], v2[w_i])));
+                res *= (sigmoid(0.5 * dot(x, v2[w_i])));
             }
 
             return res;
         }
 
+        /**
         const void print_paths() const {
             for(auto iter=paths.begin(); iter!=paths.end(); ++iter) {
                 std::cout << iter->first << ":" << std::endl;
@@ -172,6 +175,7 @@ class hierarchical_softmax {
                 std::cout << std::endl;
             }
         }
+        **/
 
         const void print(std::vector<float> vec) {
             for(unsigned i=0; i<vec.size(); ++i) {

@@ -28,7 +28,6 @@ namespace skipgram {
 
 class skipgram {
     private:
-        hsm::mat3d v1;
         hsm::mat2d v2;
 
         int V;
@@ -50,16 +49,6 @@ class skipgram {
             std::mt19937 mt(rd());
             std::uniform_real_distribution<float> score(-1.0,1.0);
 
-            for(int i=0; i<2*V; ++i) {
-                std::vector<std::vector<float>> tmp2;
-                for(int j=0; j<3*log2(V); ++j) {
-                    std::vector<float> tmp1;
-                    for(int k=0; k<d; ++k) tmp1.emplace_back(score(mt));
-                    tmp2.emplace_back(tmp1);
-                }
-                v1.emplace_back(tmp2);
-            }
-
             for(int i=0; i<V; ++i) {
                 std::vector<float> tmp;
                 for(int j=0; j<d; ++j) tmp.emplace_back(score(mt));
@@ -67,7 +56,7 @@ class skipgram {
             }
 
             std::cout << "Encoding..." << std::endl;
-            hsm::hierarchical_softmax hSm(V);
+            hsm::hierarchical_softmax hSm(V, d);
             std::vector<hsm::code_info> code_table = hSm.encode(freqs);
 
             int epoch = 0;
@@ -116,11 +105,11 @@ class skipgram {
         }
 
         const float prob(const int w1, const int w2, hsm::hierarchical_softmax hSm) const {
-            return hSm.softmax(w2, w1, v1, v2);
+            return hSm.softmax(w2, w1, v2);
         }
 
         const float prob(const int w1, const int w2, const hsm::mat2d v, hsm::hierarchical_softmax hSm) const {
-            return hSm.softmax(w2, w1, v1, v);
+            return hSm.softmax(w2, w1, v);
         }
 
         const std::vector<float> grad(int w1, int w2, hsm::hierarchical_softmax hSm) {

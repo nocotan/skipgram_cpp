@@ -43,7 +43,7 @@ void save_emb(const char* filename, std::vector<std::vector<float>> vecs) {
 }
 
 void arg_err(char *argv[]) {
-    printf("Usage: %s [-i input_file] [-o output_file] [-d vector dim] [-c window_size] [-a alpha] [-h] \n", argv[0]);
+    printf("Usage: %s [-i input_file] [-o output_file] [-d vector dim] [-c window_size] [-a alpha] [-e num_epoch] [-h] \n", argv[0]);
     exit(1);
 }
 
@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     float alpha = 0.1;
 
     int opt;
-    while((opt = getopt(argc, argv, "i:o:d:c:a:h")) != -1) {
+    while((opt = getopt(argc, argv, "i:o:d:c:a:e:h")) != -1) {
         switch(opt) {
             case 'i':
                 input_file = optarg;
@@ -75,6 +75,9 @@ int main(int argc, char *argv[]) {
             case 'a':
                 alpha = atof(optarg);
                 break;
+            case 'e':
+                num_epoch = atoi(optarg);
+                break;
             case 'h':
                 arg_err(argv);
                 exit(1);
@@ -90,6 +93,7 @@ int main(int argc, char *argv[]) {
     std::cout << "vector dim: " << d << std::endl;
     std::cout << "window size: " << c << std::endl;
     std::cout << "alpha: " << alpha << std::endl;
+    std::cout << "num epoch: " << num_epoch << std::endl;
 
     std::map<int, int> freqs;
     std::vector<std::vector<int>> contexts;
