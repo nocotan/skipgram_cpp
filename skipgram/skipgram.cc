@@ -1,3 +1,12 @@
+/**
+ * Hierarchical softmax is an alternative to the softmax in which the probability
+ * of any one outcome depends on a number of model parameters that is only logarithmic
+ * in the total number of outcomes.
+ *
+ * @file skipgram.cc
+ * @date 2017/12/20
+ *
+ */
 #ifndef SKIPGRAM_HH
 #define SKIPGRAM_HH
 
