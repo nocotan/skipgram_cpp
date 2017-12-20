@@ -14,6 +14,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <numeric>
 #include <random>
 #include <string>
 #include <vector>
@@ -42,7 +43,7 @@ class skipgram {
         skipgram(int d=20, int c=5, int num_epoch=1, float alpha=0.1)
             : d(d), c(c), num_epoch(num_epoch), alpha(alpha) { }
 
-        const void fit(const int V, const std::map<int, int> freqs, const std::vector<std::vector<int>> contexts) {
+        const void fit(const int V, const std::map<int, int> freqs, std::vector<std::vector<int>> contexts) {
             this->V = V;
 
             std::random_device rd;
@@ -65,12 +66,16 @@ class skipgram {
 
             std::cout << "Training Skipgram..." << std::endl;
 
-            const unsigned long expected_count = contexts.size() * num_epoch;
+            int mini_batch = std::min(64, (int)contexts.size());
+
+            const unsigned long expected_count = mini_batch * num_epoch;
             boost::progress_display show_progress(expected_count);
 
             while(epoch < num_epoch) {
+                std::random_shuffle(contexts.begin(), contexts.end());
                 loss = 0.0;
-                for(const auto& context : contexts) {
+                for(int i=0; i<mini_batch; ++i) {
+                    auto context = contexts[i];
                     loss += train(context, hSm);
                     ++show_progress;
                 }
@@ -84,9 +89,15 @@ class skipgram {
 
         const float train(const std::vector<int> context, hsm::hierarchical_softmax hSm) {
             float res = 0.0;
-            const int T = context.size();
+            int T = context.size();
 
-            for(int t=0; t<T; ++t) {
+            std::vector<int> arr(T);
+            std::iota(arr.begin(), arr.end(), 0);
+
+            int mini_batch = std::min(32, T);
+
+            for(int i=0; i<mini_batch; ++i) {
+                int t = arr[i];
                 const int w2 = context[t];
                 for(int j=-c; j<=c; ++j) {
                     if(t+j<=0) continue;
