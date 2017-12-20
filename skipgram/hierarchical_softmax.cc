@@ -18,7 +18,7 @@ int main() {
 
     hSm.print_paths();
 
-    hsm::mat3d v1(10, std::vector<std::vector<double>>(6));
+    hsm::mat3d v1(10, std::vector<std::vector<float>>(6));
     for(int i=0; i<10; ++i) {
         for(int j=0; j<6; ++j) {
             for(int k=0; k<10; ++k) v1[i][j].push_back(0.3);
@@ -29,7 +29,7 @@ int main() {
         for(int j=0; j<10; ++j) v2[i].push_back(0.2);
     }
 
-    double p = 0.0;
+    float p = 0.0;
     for(int i=0; i<6; ++i) {
         p += hSm.softmax(0, i, v1, v2);
         std::cout << hSm.softmax(0, i, v1, v2) << std::endl;

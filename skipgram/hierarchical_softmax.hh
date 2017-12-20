@@ -21,10 +21,12 @@
 #include <utility>
 #include <vector>
 
+#include<omp.h>
+
 namespace hsm {
 
-using mat2d = std::vector<std::vector<double>>;
-using mat3d = std::vector<std::vector<std::vector<double>>>;
+using mat2d = std::vector<std::vector<float>>;
+using mat3d = std::vector<std::vector<std::vector<float>>>;
 
 /**
  * @struct
@@ -83,7 +85,7 @@ class hierarchical_softmax {
             if(nd->left!=nullptr) edge_count++;
             if(nd->right!=nullptr) edge_count++;
 
-            pth.push_back(std::make_pair(idx, edge_count));
+            pth.emplace_back(std::make_pair(idx, edge_count));
 
             if(nd->left == nullptr && nd->right == nullptr) {
                 table[nd->value] = code_info(code, code_size);
@@ -94,18 +96,18 @@ class hierarchical_softmax {
             }
         }
 
-        const double sigmoid(double x) const {
+        const float sigmoid(const float x) const {
             if(x>6) return 1.0;
             else if(x<-6) return 0.0;
             else return 1 / (1+std::exp(-x));
         }
 
-        const double dot(std::vector<double> v1, std::vector<double> v2) const {
+        const float dot(const std::vector<float> v1, const std::vector<float> v2) const {
             //std::cout << v1.size() << " " << v2.size() << std::endl;
             assert(v1.size() == v2.size());
 
-            double res = 0.0;
-            for(unsigned i=0; i<v1.size(); ++i) res += v1[i]*v2[i];
+            float res = 0.0;
+            for(unsigned i=0, n=v1.size(); i<n; ++i) res += v1[i]*v2[i];
 
             return res;
         }
@@ -115,6 +117,8 @@ class hierarchical_softmax {
 
         std::vector<code_info> encode(std::map<int, int> freqs) {
             std::vector<node*> nodes(V);
+
+            #pragma omp parallel for
             for(int i=0; i<V; ++i) {
                 nodes[i] = new node();
                 nodes[i]->value = i;
@@ -125,7 +129,7 @@ class hierarchical_softmax {
             }
 
             std::priority_queue<node*> heap;
-            for(auto nd : nodes) heap.push(nd);
+            for(const auto nd : nodes) heap.push(nd);
 
             while(heap.size() > 1) {
                 node *n1 = heap.top(); heap.pop();
@@ -141,15 +145,19 @@ class hierarchical_softmax {
             return code_table;
         }
 
-        double softmax(int w_i, int w, mat3d v1, mat2d v2) {
-            double res = 1.0;
+        const float softmax(const int w_i, const int w, const mat3d v1, const mat2d v2) {
+            float res = 1.0;
+            const unsigned n=paths[w].size()-1;
 
-            for(unsigned j=0; j<paths[w].size()-1; ++j) {
-                int x = paths[w][j].first;
-                double edges = paths[w][j].second;
+            for(unsigned j=0; j<n; ++j) {
+                const int x = paths[w][j].first;
+                const float edges = paths[w][j].second;
 
                 // std::cout << j << " " << x << " " << edges << std::endl;
-                res *= (sigmoid((1 / edges) * dot(v1[x][j], v2[w_i])));
+                if(edges==2)
+                    res *= (sigmoid(0.5 * dot(v1[x][j], v2[w_i])));
+                else if(edges==1)
+                    res *= (sigmoid(dot(v1[x][j], v2[w_i])));
             }
 
             return res;
@@ -158,14 +166,14 @@ class hierarchical_softmax {
         const void print_paths() const {
             for(auto iter=paths.begin(); iter!=paths.end(); ++iter) {
                 std::cout << iter->first << ":" << std::endl;
-                for(auto v : iter->second) {
+                for(const auto& v : iter->second) {
                     std::cout << "->" << v.first;
                 }
                 std::cout << std::endl;
             }
         }
 
-        const void print(std::vector<double> vec) {
+        const void print(std::vector<float> vec) {
             for(unsigned i=0; i<vec.size(); ++i) {
                 std::cout << vec[i] << ",";
             }
