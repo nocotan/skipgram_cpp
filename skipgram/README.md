@@ -9,7 +9,7 @@ Usage: ./skipgram [-i input_file] [-o output_file] [-d vector dim] [-c window_si
 
 ### Instalation & Run
 
-```
+```bash
 $ make
 $ ./skipgram
 $ ./skipgram -i ./example/sequences.txt -o ./out.emb -d 15 -c 5 -a 0.1
