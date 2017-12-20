@@ -6,12 +6,15 @@
 #include <iostream>
 #include <limits>
 #include <map>
-# include <random>
+#include <random>
 #include <sstream>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 #include<omp.h>
+
+#include <boost/progress.hpp>
 
 #include "hierarchical_softmax.hh"
 
@@ -35,12 +38,11 @@ class skipgram {
             : d(d), c(c), num_epoch(num_epoch), alpha(alpha) { }
 
         const void fit(const int V, const std::map<int, int> freqs, const std::vector<std::vector<int>> contexts) {
-            std::cout << "init..." << std::endl;
             this->V = V;
 
             std::random_device rd;
             std::mt19937 mt(rd());
-            std::uniform_real_distribution<float> score(0,1.0);
+            std::uniform_real_distribution<float> score(-1.0,1.0);
 
             for(int i=0; i<2*V; ++i) {
                 std::vector<std::vector<float>> tmp2;
@@ -63,13 +65,17 @@ class skipgram {
 
             int epoch = 0;
             float loss = 0;
+            const unsigned long expected_count = contexts.size() * num_epoch;
+            boost::progress_display show_progress(expected_count);
             while(epoch < num_epoch) {
                 loss = 0.0;
                 for(const auto& context : contexts) {
                     loss += train(context, hSm);
+                    ++show_progress;
                 }
-                //std::cout << "Epoch: " << epoch << " / " << num_epoch <<  ", Loss: " << loss << std::endl;
-                std::cout << loss / contexts.size() << std::endl;
+                // std::cout << "Epoch: " << epoch << " / " << num_epoch <<  ", Loss: " << loss << std::endl;
+                // std::cout << loss / contexts.size() << std::endl;
+
                 epoch++;
             }
 
@@ -141,16 +147,53 @@ std::vector<int> split(const std::string &input, char delimiter) {
     return result;
 }
 
-int main() {
-    std::map<int, int> freqs;
-    std::vector<std::vector<int>> contexts;
+void save_emb(const char* filename, std::vector<std::vector<float>> vecs) {
+    FILE *fpw = fopen(filename, "wb");
+    for(int j=0, m=vecs.size(); j<m; ++j) {
+        auto vec = vecs[j];
+        fprintf(fpw, "%d,", j);
+        for(int i=0, n=vec.size(); i<n; ++i) {
+            if(i==n-1) fprintf(fpw, "%f\n", vec[i]);
+            else fprintf(fpw, "%f,", vec[i]);
+        }
+    }
+}
 
-    std::string input_file = "./example/sequences.txt";
+int main(int argc, char *argv[]) {
+    std::string input_file;
+    char* output_file;
+
 
     int num_epoch = 30;
     int d = 10;
     int c = 5;
     float alpha = 0.1;
+
+    if(argc<2) {
+        printf("Usage: %s [-i input_file] [-o output_file] [-h] arg1 ...\n", argv[0]);
+        exit(1);
+    }
+
+    int opt;
+    while((opt = getopt(argc, argv, "i:o:h")) != -1) {
+        switch(opt) {
+            case 'i':
+                input_file = optarg;
+                break;
+            case 'o':
+                output_file = optarg;
+                break;
+            case 'h':
+                printf("Usage: %s [-i input_file] [-o output_file] [-h] arg1 ...\n", argv[0]);
+                exit(1);
+            default:
+                printf("Usage: %s [-i input_file] [-o output_file] [-h] arg1 ...\n", argv[0]);
+                exit(1);
+        }
+    }
+
+    std::map<int, int> freqs;
+    std::vector<std::vector<int>> contexts;
 
     std::ifstream ifs(input_file);
     if (!ifs) {
@@ -171,15 +214,10 @@ int main() {
     }
 
     int V = freqs.size();
-    std::cout << V << std::endl;
 
     skipgram::skipgram skg(d, c, num_epoch, alpha);
     skg.fit(V, freqs, contexts);
 
-    auto vec = skg.get_vect();
-
-    for(unsigned i=0; i<vec.size(); ++i) {
-        for(unsigned j=0; j<vec[i].size(); ++j) std::cout << vec[i][j] << " ";
-        std::cout << std::endl;
-    }
+    auto vecs = skg.get_vect();
+    save_emb(output_file, vecs);
 }
