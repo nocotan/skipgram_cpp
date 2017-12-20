@@ -60,13 +60,17 @@ class skipgram {
                 v2.emplace_back(tmp);
             }
 
+            std::cout << "Encoding..." << std::endl;
             hsm::hierarchical_softmax hSm(V);
             std::vector<hsm::code_info> code_table = hSm.encode(freqs);
 
             int epoch = 0;
             float loss = 0;
+
             const unsigned long expected_count = contexts.size() * num_epoch;
             boost::progress_display show_progress(expected_count);
+
+            std::cout << "Training Skipgram..." << std::endl;
             while(epoch < num_epoch) {
                 loss = 0.0;
                 for(const auto& context : contexts) {
@@ -148,6 +152,7 @@ std::vector<int> split(const std::string &input, char delimiter) {
 }
 
 void save_emb(const char* filename, std::vector<std::vector<float>> vecs) {
+    std::cout << "Saving vector file..." << std::endl;
     FILE *fpw = fopen(filename, "wb");
     for(int j=0, m=vecs.size(); j<m; ++j) {
         auto vec = vecs[j];
@@ -159,23 +164,23 @@ void save_emb(const char* filename, std::vector<std::vector<float>> vecs) {
     }
 }
 
+void arg_err(char *argv[]) {
+    printf("Usage: %s [-i input_file] [-o output_file] [-d vector dim] [-c window_size] [-a alpha] [-h] \n", argv[0]);
+    exit(1);
+}
+
 int main(int argc, char *argv[]) {
-    std::string input_file;
-    char* output_file;
+    std::string input_file = "./example/sequences.txt";
+    char* output_file = (char*)"./out.emb";
 
 
-    int num_epoch = 30;
+    int num_epoch = 5;
     int d = 10;
     int c = 5;
     float alpha = 0.1;
 
-    if(argc<2) {
-        printf("Usage: %s [-i input_file] [-o output_file] [-h] arg1 ...\n", argv[0]);
-        exit(1);
-    }
-
     int opt;
-    while((opt = getopt(argc, argv, "i:o:h")) != -1) {
+    while((opt = getopt(argc, argv, "i:o:d:c:a:h")) != -1) {
         switch(opt) {
             case 'i':
                 input_file = optarg;
@@ -183,14 +188,30 @@ int main(int argc, char *argv[]) {
             case 'o':
                 output_file = optarg;
                 break;
+            case 'd':
+                d = atoi(optarg);
+                break;
+            case 'c':
+                c = atoi(optarg);
+                break;
+            case 'a':
+                alpha = atoi(optarg);
+                break;
             case 'h':
-                printf("Usage: %s [-i input_file] [-o output_file] [-h] arg1 ...\n", argv[0]);
+                arg_err(argv);
                 exit(1);
             default:
-                printf("Usage: %s [-i input_file] [-o output_file] [-h] arg1 ...\n", argv[0]);
+                arg_err(argv);
                 exit(1);
         }
     }
+
+    std::cout << "Model parameters: " << std::endl;
+    std::cout << "input file: " << input_file << std::endl;
+    std::cout << "output file: " << output_file << std::endl;
+    std::cout << "vector dim: " << d << std::endl;
+    std::cout << "window size: " << c << std::endl;
+    std::cout << "alpha: " << alpha << std::endl;
 
     std::map<int, int> freqs;
     std::vector<std::vector<int>> contexts;
@@ -201,6 +222,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    std::cout << "making vocab..." << std::endl;
     std::string str;
     while(getline(ifs, str)) {
         auto nodes = split(str, ' ');
@@ -214,6 +236,7 @@ int main(int argc, char *argv[]) {
     }
 
     int V = freqs.size();
+    std::cout << "Number of vocab: " << V << std::endl;
 
     skipgram::skipgram skg(d, c, num_epoch, alpha);
     skg.fit(V, freqs, contexts);
