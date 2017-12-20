@@ -1,5 +1,5 @@
 ## Skipgram with Hierarchical Softmax
-Skipgram is widely studied in the context of word variance representation learning.  
+Skipgram is widely studied in the context of word variance representation learning([word2vec](http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality)).  
 
 This is a C ++ implementation of Skip-gram with hierarchical softmax(hSm).  
 hSm can speed up parameter update by utilizing the constructed binary tree.
