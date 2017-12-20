@@ -29,3 +29,6 @@ Training Skipgram...
 ***************************************************
 Saving vector file...
 ```
+
+### Training Log for Random Sequences
+![training log](example/sequences.log.png "training log for random sequences")
