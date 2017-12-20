@@ -100,11 +100,12 @@ class hierarchical_softmax {
             else return 1 / (1+std::exp(-x));
         }
 
-        const double prod(std::vector<double> v1, std::vector<double> v2) const {
+        const double dot(std::vector<double> v1, std::vector<double> v2) const {
+            //std::cout << v1.size() << " " << v2.size() << std::endl;
             assert(v1.size() == v2.size());
 
             double res = 0.0;
-            for(int i=0; i<v1.size(); ++i) res += v1[i]*v2[i];
+            for(unsigned i=0; i<v1.size(); ++i) res += v1[i]*v2[i];
 
             return res;
         }
@@ -143,11 +144,12 @@ class hierarchical_softmax {
         double softmax(int w_i, int w, mat3d v1, mat2d v2) {
             double res = 1.0;
 
-            for(int j=0; j<paths[w].size()-1; ++j) {
+            for(unsigned j=0; j<paths[w].size()-1; ++j) {
                 int x = paths[w][j].first;
-                int edges = paths[w][j].second;
+                double edges = paths[w][j].second;
 
-                res *= sigmoid((1 / edges) * prod(v1[x][j], v2[w_i]));
+                // std::cout << j << " " << x << " " << edges << std::endl;
+                res *= (sigmoid((1 / edges) * dot(v1[x][j], v2[w_i])));
             }
 
             return res;
@@ -161,6 +163,13 @@ class hierarchical_softmax {
                 }
                 std::cout << std::endl;
             }
+        }
+
+        const void print(std::vector<double> vec) {
+            for(unsigned i=0; i<vec.size(); ++i) {
+                std::cout << vec[i] << ",";
+            }
+            std::cout << std::endl;
         }
 };
 
