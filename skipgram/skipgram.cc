@@ -205,7 +205,7 @@ int main(int argc, char *argv[]) {
                 c = atoi(optarg);
                 break;
             case 'a':
-                alpha = atoi(optarg);
+                alpha = atof(optarg);
                 break;
             case 'h':
                 arg_err(argv);

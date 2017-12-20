@@ -11,14 +11,13 @@ Usage: ./skipgram [-i input_file] [-o output_file] [-d vector dim] [-c window_si
 
 ```bash
 $ make
-$ ./skipgram
 $ ./skipgram -i ./example/sequences.txt -o ./out.emb -d 15 -c 5 -a 0.1
 Model parameters:
 input file: ./example/sequences.txt
 output file: ./out.emb
 vector dim: 15
 window size: 5
-alpha: 0
+alpha: 0.1
 making vocab...
 Number of vocab: 10
 Encoding...
