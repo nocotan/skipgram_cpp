@@ -67,10 +67,11 @@ class skipgram {
             int epoch = 0;
             float loss = 0;
 
+            std::cout << "Training Skipgram..." << std::endl;
+
             const unsigned long expected_count = contexts.size() * num_epoch;
             boost::progress_display show_progress(expected_count);
 
-            std::cout << "Training Skipgram..." << std::endl;
             while(epoch < num_epoch) {
                 loss = 0.0;
                 for(const auto& context : contexts) {
