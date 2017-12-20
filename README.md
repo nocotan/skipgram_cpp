@@ -15,3 +15,4 @@ The properties of hSm are as follows:
 ### Link
 * [Distributed Representations of Words and Phrases and their Compositionality](http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality)
 * [Hierarchical Probabilistic Neural Network Language Model](https://pdfs.semanticscholar.org/39eb/fbb53b041b97332cd351886749c0395037fb.pdf#page=255)
+* [word2vec](https://github.com/dav/word2vec)
