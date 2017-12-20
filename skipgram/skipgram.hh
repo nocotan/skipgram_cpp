@@ -49,10 +49,11 @@ class skipgram {
             std::mt19937 mt(rd());
             std::uniform_real_distribution<float> score(-1.0,1.0);
 
-            for(int i=0; i<V; ++i) {
-                std::vector<float> tmp;
-                for(int j=0; j<d; ++j) tmp.emplace_back(score(mt));
-                v2.emplace_back(tmp);
+            v2.resize(V+100);
+
+            for(int i=0; i<V+100; ++i) {
+                for(int j=0; j<d; ++j)
+                    v2[i].emplace_back(score(mt));
             }
 
             std::cout << "Encoding..." << std::endl;

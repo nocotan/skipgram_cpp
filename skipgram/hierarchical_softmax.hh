@@ -71,6 +71,8 @@ std::random_device rd;
 std::mt19937 mt(rd());
 std::uniform_real_distribution<float> score(-1.0,1.0);
 
+std::map<int, std::vector<std::vector<float>>> paths;
+
 /**
  * @class
  * Hierarchical soft max class
@@ -79,13 +81,8 @@ class hierarchical_softmax {
     private:
         int V;
         int d;
-        std::map<int, std::vector<std::vector<float>>> paths;
-
-        int idx = -1;
 
         void dfs(std::vector<code_info> &table, node* nd, int code, int code_size, std::vector<std::vector<float>> pth) {
-            idx++;
-
             std::vector<float> tmp;
 
             for(int i=0; i<d; ++i) tmp.push_back(score(mt));
