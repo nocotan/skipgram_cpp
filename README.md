@@ -6,7 +6,7 @@ hSm can speed up parameter update by utilizing the constructed binary tree.
 
 The properties of hSm are as follows:
 * The number of vectors that need to be updated is logarithmic order.
-* By using the Huffman tree, the data approaches balanced data at each node.
+* By using the [Huffman tree](https://en.wikipedia.org/wiki/Huffman_coding), the data approaches balanced data at each node.
 
 ### Link
 * [Distributed Representations of Words and Phrases and their Compositionality](http://papers.nips.cc/paper/5021-distributed-representations-of-words-and-phrases-and-their-compositionality)
