@@ -11,12 +11,17 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unistd.h>
 #include <vector>
 
 #include "skipgram.hh"
+
+std::set<std::string> st;
+std::map<std::string, int> mp;
+std::map<int, std::string> mp2;
 
 std::vector<int> split(const std::string &input, char delimiter) {
     std::istringstream stream(input);
@@ -34,7 +39,8 @@ void save_emb(const char* filename, std::vector<std::vector<float>> vecs) {
     FILE *fpw = fopen(filename, "wb");
     for(int j=0, m=vecs.size(); j<m; ++j) {
         auto vec = vecs[j];
-        fprintf(fpw, "%d,", j);
+        if(mp2.find(j)==mp2.end()) continue;
+        fprintf(fpw, "%s,", mp2[j].c_str());
         for(int i=0, n=vec.size(); i<n; ++i) {
             if(i==n-1) fprintf(fpw, "%f\n", vec[i]);
             else fprintf(fpw, "%f,", vec[i]);
@@ -50,7 +56,6 @@ void arg_err(char *argv[]) {
 int main(int argc, char *argv[]) {
     std::string input_file = "./example/sequences.txt";
     char* output_file = (char*)"./out.emb";
-
 
     int num_epoch = 10;
     int d = 10;
@@ -105,14 +110,21 @@ int main(int argc, char *argv[]) {
     }
 
     std::cout << "making vocab..." << std::endl;
+    int k = 0;
     std::string str;
     while(getline(ifs, str)) {
         auto nodes = split(str, ' ');
         std::vector<int> sq;
 
         for(const auto node : nodes) {
-            freqs[node]++;
-            sq.emplace_back(node);
+            if(st.find(std::to_string(node))==st.end()) {
+                st.insert(std::to_string(node));
+                mp[std::to_string(node)] = k;
+                mp2[k] = std::to_string(node);
+                ++k;
+            }
+            freqs[mp[std::to_string(node)]]++;
+            sq.emplace_back(mp[std::to_string(node)]);
         }
         contexts.emplace_back(sq);
     }
