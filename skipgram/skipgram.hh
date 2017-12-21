@@ -29,6 +29,8 @@ namespace skipgram {
 
 class skipgram {
     private:
+        hsm::hierarchical_softmax hSm;
+
         hsm::mat2d v2;
 
         int V;
@@ -58,7 +60,7 @@ class skipgram {
             }
 
             std::cout << "Encoding..." << std::endl;
-            hsm::hierarchical_softmax hSm(V, d);
+            hSm = hsm::hierarchical_softmax(V, d);
             std::vector<hsm::code_info> code_table = hSm.encode(freqs);
 
             int epoch = 0;
@@ -76,25 +78,25 @@ class skipgram {
                 loss = 0.0;
                 for(int i=0; i<mini_batch; ++i) {
                     auto context = contexts[i];
-                    loss += train(context, hSm);
+                    loss += train(context);
                     ++show_progress;
                 }
                 // std::cout << "Epoch: " << epoch << " / " << num_epoch <<  ", Loss: " << loss << std::endl;
-                // std::cout << loss / contexts.size() << std::endl;
+                std::cout << loss / contexts.size() << std::endl;
 
                 epoch++;
             }
 
         }
 
-        const float train(const std::vector<int> context, hsm::hierarchical_softmax hSm) {
+        const float train(const std::vector<int> context) {
             float res = 0.0;
             int T = context.size();
 
             std::vector<int> arr(T);
             std::iota(arr.begin(), arr.end(), 0);
 
-            int mini_batch = std::min(32, T);
+            int mini_batch = std::min(64, T);
 
             for(int i=0; i<mini_batch; ++i) {
                 int t = arr[i];
@@ -105,7 +107,7 @@ class skipgram {
 
                     const int w1 = context[t+j];
                     // res += log(prob(w1, w2, hSm));
-                    const std::vector<float> grad_f = grad(w1, w2, hSm);
+                    const std::vector<float> grad_f = grad(w1, w2);
                     #pragma omp parallel for
                     for(int i=0; i<d; ++i) {
                         this->v2[w1][i] += alpha * grad_f[i];
@@ -116,6 +118,7 @@ class skipgram {
             return res;
         }
 
+        /**
         const float prob(const int w1, const int w2, hsm::hierarchical_softmax hSm) const {
             return hSm.softmax(w2, w1, v2);
         }
@@ -123,8 +126,9 @@ class skipgram {
         const float prob(const int w1, const int w2, const hsm::mat2d v, hsm::hierarchical_softmax hSm) const {
             return hSm.softmax(w2, w1, v);
         }
+        **/
 
-        const std::vector<float> grad(int w1, int w2, hsm::hierarchical_softmax hSm) {
+        const std::vector<float> grad(int w1, int w2) {
             constexpr float h = 0.1;
 
             std::vector<float> res(this->d);
@@ -133,7 +137,10 @@ class skipgram {
             for(int i=0; i<(this->d); ++i) {
                 v_h = v2;
                 v_h[w2][i] += h;
-                res[i] = (prob(w1, w2, v_h, hSm) - prob(w1, w2, hSm)) / h;
+                const float a = hSm.softmax(w2, w1, v_h);
+                const float b = hSm.softmax(w2, w1, v2);
+                //res[i] = (prob(w1, w2, v_h, hSm) - prob(w1, w2, hSm)) / h;
+                res[i] = a - b;
             }
 
             return res;

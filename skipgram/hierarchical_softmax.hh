@@ -115,6 +115,7 @@ class hierarchical_softmax {
         }
 
     public:
+        hierarchical_softmax() { }
         hierarchical_softmax(int V, int d) : V(V), d(d) { }
 
         std::vector<code_info> encode(std::map<int, int> freqs) {
@@ -156,7 +157,8 @@ class hierarchical_softmax {
                 auto x = paths[w][j];
 
                 // std::cout << j << " " << x << " " << edges << std::endl;
-                res *= (sigmoid(0.5 * dot(x, v2[w_i])));
+                const float b = dot(x, v2[w_i]);
+                res *= (sigmoid(0.5 * b));
             }
 
             return res;
