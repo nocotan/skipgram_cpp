@@ -22,8 +22,6 @@
 #include <utility>
 #include <vector>
 
-#include<omp.h>
-
 namespace hsm {
 
 using mat2d = std::vector<std::vector<float>>;
@@ -105,13 +103,19 @@ class hierarchical_softmax {
         }
 
         const float dot(const std::vector<float> v1, const std::vector<float> v2) const {
-            //std::cout << v1.size() << " " << v2.size() << std::endl;
-            assert(v1.size() == v2.size());
+            unsigned n = v1.size();
+            __m128 u = {0};
 
-            float res = 0.0;
-            for(unsigned i=0, n=v1.size(); i<n; ++i) res += v1[i]*v2[i];
+            for (unsigned i = 0; i < n; i += 4) {
+                __m128 w = _mm_load_ps(&v1[i]);
+                __m128 x = _mm_load_ps(&v2[i]);
 
-            return res;
+                x = _mm_mul_ps(w, x);
+                u = _mm_add_ps(u, x);
+            }
+            __attribute__((aligned(16))) float t[4] = {0};
+            _mm_store_ps(t, u);
+            return t[0] + t[1] + t[2] + t[3];
         }
 
     public:
@@ -121,7 +125,6 @@ class hierarchical_softmax {
         std::vector<code_info> encode(std::map<int, int> freqs) {
             std::vector<node*> nodes(V);
 
-            #pragma omp parallel for
             for(int i=0; i<V; ++i) {
                 nodes[i] = new node();
                 nodes[i]->value = i;

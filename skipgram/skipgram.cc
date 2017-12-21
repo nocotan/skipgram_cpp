@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
     char* output_file = (char*)"./out.emb";
 
 
-    int num_epoch = 5;
+    int num_epoch = 10;
     int d = 10;
     int c = 5;
     float alpha = 0.1;
