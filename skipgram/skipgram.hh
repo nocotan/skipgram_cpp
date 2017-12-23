@@ -117,16 +117,6 @@ class skipgram {
             }
         }
 
-        /**
-        const float prob(const int w1, const int w2, hsm::hierarchical_softmax hSm) const {
-            return hSm.softmax(w2, w1, v2);
-        }
-
-        const float prob(const int w1, const int w2, const hsm::mat2d v, hsm::hierarchical_softmax hSm) const {
-            return hSm.softmax(w2, w1, v);
-        }
-        **/
-
         const std::vector<float> grad(int w1, int w2) {
             constexpr float h = 0.1;
 
