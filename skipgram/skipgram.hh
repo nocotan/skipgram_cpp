@@ -138,7 +138,6 @@ class skipgram {
                 v_h[w2][i] += h;
                 const float a = hSm.softmax(w2, w1, v_h);
                 const float b = hSm.softmax(w2, w1, v2);
-                //res[i] = (prob(w1, w2, v_h, hSm) - prob(w1, w2, hSm)) / h;
                 v2[w1][i] = alpha * (a - b);
             }
 
