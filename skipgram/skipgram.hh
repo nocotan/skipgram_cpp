@@ -95,15 +95,8 @@ class skipgram {
                     if(t+j>=T) break;
 
                     const int w1 = context[t+j];
-                    // res += log(prob(w1, w2, hSm));
-                    // const std::vector<float> grad_f = grad(w1, w2);
-                    /**
-                    for(int i=0; i<d; ++i) {
-                        v2[w1][i] += alpha * grad_f[i];
-                        res += grad_f[i];
-                    }
-                    **/
                     const float h = 0.1;
+
                     hsm::mat2d v_h;
                     for(int i=0; i<(this->d); ++i) {
                         v_h = v2;
