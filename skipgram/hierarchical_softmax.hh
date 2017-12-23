@@ -167,18 +167,6 @@ class hierarchical_softmax {
             return res;
         }
 
-        /**
-        const void print_paths() const {
-            for(auto iter=paths.begin(); iter!=paths.end(); ++iter) {
-                std::cout << iter->first << ":" << std::endl;
-                for(const auto& v : iter->second) {
-                    std::cout << "->" << v.first;
-                }
-                std::cout << std::endl;
-            }
-        }
-        **/
-
         const void print(std::vector<float> vec) {
             for(unsigned i=0; i<vec.size(); ++i) {
                 std::cout << vec[i] << ",";
