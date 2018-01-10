@@ -131,7 +131,6 @@ class skipgram {
             return this->v2;
         }
 };
+} //namespace skipgram
 
 #endif
-
-} //namespace skipgram
