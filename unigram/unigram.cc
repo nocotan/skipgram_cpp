@@ -43,7 +43,7 @@ class unigram {
 
 
 int main() {
-    std::string input_file = "./facebook_n2v.seqs";
+    const std::string input_file = "./facebook_n2v.seqs";
     std::map<int, int> freq;
 
     std::ifstream ifs(input_file);
